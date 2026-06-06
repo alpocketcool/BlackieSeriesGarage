@@ -877,6 +877,108 @@ input[type=range].knob::-webkit-slider-thumb {
   #topbar { gap: 8px; padding: 0 10px; }
   .bpm-label { display:none; }
 }
+/* ============================================================
+   GUIDE PANEL
+   ============================================================ */
+.guide-section {
+  margin-bottom: 24px;
+}
+.guide-section-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  color: var(--sel);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.guide-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+.guide-card-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--sel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guide-card-title .icon { font-size: 1rem; }
+.guide-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.guide-key {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-bottom: 2px solid var(--border2);
+  color: var(--sel);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 48px;
+  text-align: center;
+}
+.guide-desc {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--mid);
+  line-height: 1.5;
+}
+.guide-desc strong { color: var(--white); }
+.guide-tip {
+  background: var(--selDim);
+  border-left: 3px solid var(--sel);
+  padding: 10px 14px;
+  border-radius: 0 4px 4px 0;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--white);
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+}
+.guide-tip strong { color: var(--sel); }
+.guide-tip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.pad-key-map {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  max-width: 280px;
+}
+.pkm-cell {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 4px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+}
+.pkm-cell .k { color: var(--sel); font-weight:700; font-size:0.7rem; display:block; margin-bottom:2px; }
+.pkm-cell .n { color: var(--mid); font-size:0.48rem; }
 </style>
 </head>
 <body>
@@ -933,6 +1035,7 @@ input[type=range].knob::-webkit-slider-thumb {
     <button class="tab" data-tab="mixer">🎚 Mixer</button>
     <button class="tab" data-tab="fx">⚡ FX</button>
     <button class="tab" data-tab="learn">📺 Learn</button>
+    <button class="tab" data-tab="guide">📖 Guide</button>
     <button class="tab" data-tab="saves">💾 Saves</button>
   </div>
 
@@ -1007,6 +1110,12 @@ input[type=range].knob::-webkit-slider-thumb {
     <div class="panel" id="panel-learn">
       <div class="section-hdr">Learn — Beatmaking & Groovepad</div>
       <div class="learn-grid" id="learnGrid"></div>
+    </div>
+
+    <!-- ===== GUIDE ===== -->
+    <div class="panel" id="panel-guide">
+      <div class="section-hdr">Ściągawka — BlackieSeries Garage</div>
+      <div id="guideContent"></div>
     </div>
 
     <!-- ===== SAVES ===== -->
@@ -1749,18 +1858,19 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'mixer') buildMixer();
     if (tab.dataset.tab === 'fx') { buildFXPanel(); }
     if (tab.dataset.tab === 'learn') buildLearnPanel();
+    if (tab.dataset.tab === 'guide') buildGuidePanel();
     if (tab.dataset.tab === 'saves') renderSaveList();
   });
 });
 
 // ─── LEARN PANEL ─────────────────────────────────────────────
 const LEARN_VIDEOS = [
-  { id: 'QxCPpUzUmCY', title: 'Groovepad Tutorial — pierwsze kroki', tag: 'Groovepad', ch: 'Gismart' },
-  { id: 'cNAdtkSjSB8', title: 'How to Make a Beat on Groovepad', tag: 'Groovepad', ch: 'Tutorial' },
-  { id: 'HX5b_MAUQPA', title: 'SP-404 MK2 — Complete Overview', tag: 'SP-404', ch: 'Roland' },
-  { id: 'pZTCXlBjcuE', title: 'MPC One Beatmaking From Scratch', tag: 'MPC', ch: 'Akai' },
-  { id: 'Uk_4LKMTB6s', title: 'Freestyle Rap Over Beats — Tips', tag: 'Freestyle', ch: 'Rap Tips' },
-  { id: 'o6ZbD0ZGQTI', title: 'Beatmaking for Beginners — BPM & Timing', tag: 'Basics', ch: 'Beatmaking' },
+  { id: 'QxCPpUzUmCY', title: 'Groovepad Tutorial — pierwsze kroki', tag: 'Groovepad', ch: 'Gismart', url: 'https://www.youtube.com/watch?v=QxCPpUzUmCY' },
+  { id: 'cNAdtkSjSB8', title: 'How to Make a Beat on Groovepad', tag: 'Groovepad', ch: 'Tutorial', url: 'https://www.youtube.com/watch?v=cNAdtkSjSB8' },
+  { id: 'HX5b_MAUQPA', title: 'SP-404 MK2 — Complete Overview', tag: 'SP-404', ch: 'Roland', url: 'https://www.youtube.com/watch?v=HX5b_MAUQPA' },
+  { id: 'pZTCXlBjcuE', title: 'MPC One Beatmaking From Scratch', tag: 'MPC', ch: 'Akai', url: 'https://www.youtube.com/watch?v=pZTCXlBjcuE' },
+  { id: 'Uk_4LKMTB6s', title: 'Freestyle Rap Over Beats — Tips', tag: 'Freestyle', ch: 'Rap Tips', url: 'https://www.youtube.com/watch?v=Uk_4LKMTB6s' },
+  { id: 'o6ZbD0ZGQTI', title: 'Beatmaking for Beginners — BPM & Timing', tag: 'Basics', ch: 'Beatmaking', url: 'https://www.youtube.com/watch?v=o6ZbD0ZGQTI' },
 ];
 
 let learnBuilt = false;
@@ -1773,27 +1883,193 @@ function buildLearnPanel() {
     const card = document.createElement('div');
     card.className = 'learn-card';
     card.innerHTML = `
-      <div class="learn-thumb" id="lt-${v.id}">
-        <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt="${v.title}" loading="lazy">
-        <div class="learn-play-btn">▶</div>
-      </div>
-      <div class="learn-iframe-wrap" id="lw-${v.id}"></div>
+      <a href="${v.url}" target="_blank" rel="noopener" style="text-decoration:none;display:block;">
+        <div class="learn-thumb">
+          <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt="${v.title}" loading="lazy">
+          <div class="learn-play-btn">▶</div>
+        </div>
+      </a>
       <div class="learn-info">
         <div class="learn-title">${v.title}</div>
         <div class="learn-meta">${v.ch}</div>
         <span class="learn-tag">${v.tag}</span>
+        <a href="${v.url}" target="_blank" rel="noopener"
+           style="display:inline-block;margin-top:8px;font-family:var(--font-mono);font-size:0.58rem;color:var(--sel);letter-spacing:0.08em;text-decoration:none;border-bottom:1px solid var(--border2);">
+          → Otwórz na YouTube ↗
+        </a>
       </div>
     `;
-    card.querySelector('#lt-'+v.id).addEventListener('click', () => {
-      const wrap = card.querySelector('#lw-'+v.id);
-      const thumb = card.querySelector('#lt-'+v.id);
-      if (wrap.classList.contains('open')) return;
-      wrap.classList.add('open');
-      thumb.style.display = 'none';
-      wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.id}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    });
     grid.appendChild(card);
   });
+}
+
+// ─── GUIDE PANEL ─────────────────────────────────────────────
+let guideBuilt = false;
+function buildGuidePanel() {
+  if (guideBuilt) return;
+  guideBuilt = true;
+
+  const container = document.getElementById('guideContent');
+  const KEY_MAP = [
+    ['1','KICK'],['2','SNARE'],['3','HH CL'],['4','HH OP'],
+    ['Q','CLAP'],['W','RIMSH'],['E','PERC1'],['R','PERC2'],
+    ['A','808'],['S','BASS'],['D','FX UP'],['F','FX DN'],
+    ['Z','VOX1'],['X','VOX2'],['C','CHORD'],['V','LOOP'],
+  ];
+
+  container.innerHTML = `
+
+    <div class="guide-section">
+      <div class="guide-section-title">🎹 Klawiatura — pady</div>
+      <div class="pad-key-map" style="margin-bottom:12px;">
+        ${KEY_MAP.map(([k,n]) => `<div class="pkm-cell"><span class="k">${k}</span><span class="n">${n}</span></div>`).join('')}
+      </div>
+      <div class="guide-tip">Uderzasz w klawisz = odpalasz pad. <strong>Spacja = PLAY/STOP.</strong><br>
+      Możesz grać na klawiaturze jak na MPC — lewa ręka basy, prawa hi-haty.</div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">⚡ Szybki start — pierwsze 5 minut</div>
+      <div class="guide-tip-grid">
+        <div class="guide-tip">
+          <strong>1. Wczytaj sample</strong><br>
+          Kliknij ↑ na padzie albo przeciągnij plik WAV/MP3 prosto na pad.<br>
+          Możesz też zostawić domyślne syntetyczne brzmienia.
+        </div>
+        <div class="guide-tip">
+          <strong>2. Ustaw BPM</strong><br>
+          Domyślnie 120. Trap = 130–145. Hip-hop = 85–100.<br>
+          Zmień strzałkami − / + albo wpisz ręcznie.
+        </div>
+        <div class="guide-tip">
+          <strong>3. Kliknij PLAY</strong><br>
+          Sekwencer startuje. Beat dots w górze tykają takt.<br>
+          Teraz klikaj pady — grają w czasie rzeczywistym.
+        </div>
+        <div class="guide-tip">
+          <strong>4. Idź do Sequencer</strong><br>
+          Zaznacz kroki klikając w siatkę. Wiersz 1 = KICK, 2 = SNARE, 3 = HH.<br>
+          Drag po siatce = szybkie malowanie.
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">⬛ Sequencer — jak czytać</div>
+      <div class="guide-grid">
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="icon">⬛</span>Siatka 16 kroków</div>
+          <div class="guide-row"><span class="guide-key">krok 1</span><span class="guide-desc">Pierwszy beat taktu — tu zazwyczaj ląduje <strong>KICK</strong></span></div>
+          <div class="guide-row"><span class="guide-key">krok 5</span><span class="guide-desc">Drugi ćwierćnut — tu ląduje <strong>SNARE</strong></span></div>
+          <div class="guide-row"><span class="guide-key">krok 9</span><span class="guide-desc">Trzeci beat — drugi <strong>KICK</strong></span></div>
+          <div class="guide-row"><span class="guide-key">krok 13</span><span class="guide-desc">Czwarty beat — drugi <strong>SNARE</strong></span></div>
+          <div class="guide-tip" style="margin-top:8px;">Klasyczny boom-bap: kick na 1+9, snare na 5+13, hi-hat na wszystkich parzystych.</div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="icon">🔄</span>Opcje</div>
+          <div class="guide-row"><span class="guide-key">Clear</span><span class="guide-desc">Czyści cały pattern — zacznij od nowa</span></div>
+          <div class="guide-row"><span class="guide-key">Duplicate</span><span class="guide-desc">Kopiuje kroki 1-8 na 9-16 — dłuższy loop</span></div>
+          <div class="guide-row"><span class="guide-key">4/8/16</span><span class="guide-desc">Liczba tracków — 4 to podstawa, 16 to pełny bank padów</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">🎚 Mixer & FX — co robi co</div>
+      <div class="guide-grid">
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="icon">🎚</span>Mixer</div>
+          <div class="guide-row"><span class="guide-key">M</span><span class="guide-desc"><strong>Mute</strong> — wycisza pad. Przydatne żeby wyłączyć jeden element i posłuchać reszty</span></div>
+          <div class="guide-row"><span class="guide-key">S</span><span class="guide-desc"><strong>Solo</strong> — słyszysz tylko ten jeden pad. Reszta milczy</span></div>
+          <div class="guide-row"><span class="guide-key">Fader</span><span class="guide-desc">Głośność kanału. Kick powinien być najgłośniejszy</span></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="icon">⚡</span>FX na padzie</div>
+          <div class="guide-row"><span class="guide-key">Filter</span><span class="guide-desc">Lowpass — im mniej, tym bardziej "zasłonięty" dźwięk. Dobry na hi-haty w tle</span></div>
+          <div class="guide-row"><span class="guide-key">Delay</span><span class="guide-desc">Echo. Świetne na wokale i perkie. Ostrożnie z kickiem</span></div>
+          <div class="guide-row"><span class="guide-key">Reverb</span><span class="guide-desc">Pogłos — "sala". Dodaj trochę na snare, mało na kick</span></div>
+          <div class="guide-row"><span class="guide-key">Drive</span><span class="guide-desc">Przesterowanie — brudniejszy, agresywniejszy dźwięk</span></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="icon">🔊</span>Master FX</div>
+          <div class="guide-row"><span class="guide-key">Lowpass</span><span class="guide-desc">Filtruje cały miks. Zakręć w lewo = efekt "przez ścianę"</span></div>
+          <div class="guide-row"><span class="guide-key">Reverb</span><span class="guide-desc">Pogłos na całość. Małe wartości = spójność brzmienia</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">⏺ Recorder — nagrywanie</div>
+      <div class="guide-tip-grid">
+        <div class="guide-tip">
+          <strong>REC</strong> — startuje nagrywanie całego miksu.<br>
+          Nagrywa dokładnie to co słyszysz — pady + sekwencer + FX.
+        </div>
+        <div class="guide-tip">
+          <strong>STOP REC</strong> — kończy nagrywanie.<br>
+          Nagranie pojawia się w pamięci aplikacji.
+        </div>
+        <div class="guide-tip">
+          <strong>PLAY REC</strong> — odsłuch nagrania zanim zapiszesz.<br>
+          Sprawdź czy wyszło jak chciałeś.
+        </div>
+        <div class="guide-tip">
+          <strong>↓ WAV</strong> — pobierz plik WAV na dysk.<br>
+          Możesz go otworzyć w każdym programie muzycznym.
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">💾 Save / Load — projekty</div>
+      <div class="guide-tip">
+        Zakładka <strong>Saves</strong> → wpisz nazwę → kliknij <strong>Zapisz</strong>.<br>
+        Projekt trzymany w przeglądarce (localStorage). <strong>Nie czyść historii przeglądarki</strong> — stracisz projekty.<br>
+        Zapisuje: BPM, pattern sekwencera, nazwy padów, ustawienia głośności i FX.
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">🎵 Własne sample — jak wrzucić</div>
+      <div class="guide-tip-grid">
+        <div class="guide-tip">
+          <strong>Drag & Drop</strong><br>
+          Przeciągnij plik WAV lub MP3 z komputera prosto na pad.<br>
+          Zobaczysz podświetlenie — upuść.
+        </div>
+        <div class="guide-tip">
+          <strong>Przycisk ↑</strong><br>
+          Kliknij strzałkę w prawym dolnym rogu pada.<br>
+          Otworzy się okno wyboru pliku.
+        </div>
+        <div class="guide-tip">
+          <strong>Dobre formaty</strong><br>
+          WAV — najlepsza jakość.<br>
+          MP3 — mniejszy plik, też działa.<br>
+          Krótkie sampla (0.1s – 2s) brzmią najlepiej na padach.
+        </div>
+        <div class="guide-tip">
+          <strong>Skąd brać sample?</strong><br>
+          freesound.org — darmowe, legalne.<br>
+          splice.com — płatne ale profesjonalne.<br>
+          Albo nagraj sam telefonem i wrzuć.
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-section-title">🎤 Freestyle — jak to połączyć</div>
+      <div class="guide-tip">
+        <strong>Krok 1</strong> — Zrób prosty beat: kick na 1+9, snare na 5+13, hi-hat na 3+7+11+15.<br>
+        <strong>Krok 2</strong> — Ustaw BPM 90–100 (wolniej = łatwiej freestylować).<br>
+        <strong>Krok 3</strong> — Kliknij PLAY, odczekaj jedno kółko (16 kroków) żeby poczuć rytm.<br>
+        <strong>Krok 4</strong> — Mów. Cokolwiek. Sylaby muszą trafiać na beat.<br>
+        <strong>Krok 5</strong> — Kliknij REC i nagraj sesję. Odsłuchaj. Powtórz.<br><br>
+        <strong>Złota zasada:</strong> nie myśl za dużo. Pierwsze słowo które przyszło — mów je.
+      </div>
+    </div>
+
+  `;
 }
 
 // ─── SAVE / LOAD ─────────────────────────────────────────────
